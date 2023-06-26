@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://unpkg.com/three@0.137.4/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.137.4/examples/js/controls/OrbitControls.js"></script>
+  </head>
+<body>
+ <h1>地球と太陽</h1>
+ <p>
+    メルカトル図法で描かれた地球の画像を使うことで、地球をよりリアルな見た目に近づけた。
+    太陽のイラストのビルボードと、点光源を組み合わせて太陽から光が出ているようにした。
+ </p>
+ <script>
+      // ページの読み込みを待つ
+      window.addEventListener('DOMContentLoaded', init);
+
+      function init() {
+        // サイズを指定
+        const width = 800
+        const height = 600;
+
+        // レンダラーを作成
+        var renderer = new THREE.WebGLRenderer();
+        document.body.appendChild(renderer.domElement);
+        renderer.setSize(width, height);
+        // 背景の色を設定
+        renderer.setClearColor(0x0A0017);
+
+
+        // シーンを作成
+        const scene = new THREE.Scene();
+
+        // カメラを作成
+        const camera = new THREE.PerspectiveCamera(45, width / height);
+        // カメラの初期座標を設定
+        camera.position.set(0, 1, 5);
+
+        // カメラコントローラーを作成
+        const controls = new THREE.OrbitControls(camera, document.body); 
+        
+        //環境光源
+        const light1 = new THREE.AmbientLight(0xFFFFFF, 0.1);
+        scene.add(light1);
+        //　点光源
+        const light2 = new THREE.PointLight(0xFFFFFF, 2, 50, 1.0);
+        scene.add(light2);
+
+        // helper
+        const gridHelper = new THREE.GridHelper(6,30); // size, step
+        scene.add(gridHelper);
+        const axisHelper = new THREE.AxisHelper(5); //軸の長さ　X：赤、Y：緑、z：青
+        scene.add(axisHelper);
+
+        var textureLoader = new THREE.TextureLoader();
+        var texture = textureLoader.load("img/ground.jpg"); 
+        var mat = new THREE.MeshStandardMaterial(); 
+        mat.map = texture;
+        // 地球を作成
+        var earthGeometry = new THREE.SphereGeometry( 0.5, 32, 32 );
+        var earth = new THREE.Mesh( earthGeometry, mat ); 
+        earth.position.set( 2, 0, 0);
+        scene.add( earth );
+
+        const all = new THREE.Group()
+        all.add(earth);
+        all.position.set(0,0,0);
+        scene.add(all);
+
+        var textureLoader = new THREE.TextureLoader();  
+        var texture = textureLoader.load("img/sun.png");
+        const material = new THREE.SpriteMaterial({ map: texture,}); 
+        const sprite1 = new THREE.Sprite(material);
+        sprite1.scale.set(1,1,1);
+        sprite1.position.set(0,0,0);
+        scene.add(sprite1);
+
+        update();
+
+        // 毎フレーム時に実行されるループイベントです
+        function update() {
+            // レンダリング
+            renderer.render(scene, camera);
+            requestAnimationFrame(update);
+
+            // 地球の自転
+            earth.rotation.y += 0.01;
+
+            //地球の公転
+            all.rotation.y += 0.001;
+
+        }
+      }
+    </script>
+</body>
